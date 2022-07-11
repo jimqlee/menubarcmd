@@ -1,4 +1,4 @@
-const { app, Tray, Menu, nativeImage, shell, Notification, crashReporter } = require('electron');
+const { app, Tray, Menu, shell, Notification, crashReporter } = require('electron');
 const shelljs = require('shelljs')
 const fs = require('fs')
 const path = require('path')
