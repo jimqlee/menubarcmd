@@ -1,6 +1,7 @@
 const { app, Tray, Menu, nativeImage, shell, Notification, crashReporter } = require('electron');
 const shelljs = require('shelljs')
 const fs = require('fs')
+const path = require('path')
 const executor = require('child_process').exec;
 
 
@@ -17,11 +18,8 @@ crashReporter.start({uploadToServer: false})
 
 shelljs.config.execPath = String(shelljs.which('node'))
 
-// 应用图标
-const icon = nativeImage.createFromDataURL('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAATwAAAE8BY4r91wAAAKtQTFRFAAAAuszZuszZuszZuszZuszZuszZus3ZuszZuszZuszZuszZuszZuszZuszZuszZuszZvMvaus3XvMvZttDVttDVuszZuszZuszYuszZuszZuszZuszZuszZuszZuszZuszZus7auszZuszZuszZuszZuszZuszZvc3auszZuszZuszZuszZu8zZuszZuszZuszZuszZuszZuszZuszZuszZuszZuszZusvZHCwC4QAAADl0Uk5TABU9Ju//UgGvhK2FhlM0614HCAYDAf0eBvYsJeZrGyQnAZlprCDWRQGh52+CAXgLx1hU+JUHN2gB39SYGgAAAItJREFUeJxdjtkSgjAMRW+pQWjFXVxQQUVccN///8ssUx0j5yk5k7m5gHAYEhAV4rhwqIofnm8E26F0IWpBSdQbTaDV7nR7H4Eg7A+GJjEcWRGNJ8A0jhI5s2K+KGX8f5HkqXSJLFutN0ptc8D19U7AdNwftM6P39uiNCNJiU5nbi5Xut25wOP5ssMbowEIudzfrsEAAAAASUVORK5CYII=')
-// 单实例
+// 应用单例
 const allowToInitiate = app.requestSingleInstanceLock({})
-
 if (!allowToInitiate) {
   app.quit()
 }
@@ -29,7 +27,7 @@ if (!allowToInitiate) {
 app.whenReady().then(() => {
   if (app.dock) app.dock.hide();
 
-  tray = new Tray(icon)
+  tray = new Tray(path.join(__dirname, '../assets/icon_16x16.png'))
   tray.setToolTip('MenubarCMD')
 
   if (process.platform === 'win32') {

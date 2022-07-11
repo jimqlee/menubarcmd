@@ -11,7 +11,7 @@
   },
   "repository": "",
   "author": "jimqlee",
-  "license": "BSD",
+  "license": "MPLv2",
   "dependencies": {
     "shelljs": "^0.8.5"
   },
