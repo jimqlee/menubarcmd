@@ -1,4 +1,4 @@
-const { app, Tray, Menu, shell, Notification, crashReporter } = require('electron');
+const { app, Tray, Menu, BrowserWindow, dialog, shell, Notification, crashReporter } = require('electron');
 const shelljs = require('shelljs')
 const fs = require('fs')
 const path = require('path')
@@ -10,6 +10,7 @@ const CONFIG_PATH = app.getPath('userData')
 // 配置文件
 const CONFIG_FILE = CONFIG_PATH + "/menucmd.json"
 
+let win = null;
 let tray = null;
 
 // 崩溃日志
@@ -22,6 +23,11 @@ shelljs.config.execPath = String(shelljs.which('node'))
 const allowToInitiate = app.requestSingleInstanceLock({})
 if (!allowToInitiate) {
   app.quit()
+}
+
+if (app.isPackaged) {
+  // 设置开机启动, 启动后隐藏窗口
+  app.setLoginItemSettings({openAtLogin: true, openAsHidden: true})
 }
 
 app.whenReady().then(() => {
@@ -44,6 +50,10 @@ app.whenReady().then(() => {
   updateMenu()
 })
 
+app.on('window-all-closed', () => {
+  // 当所有窗口关闭时, 默认会退出应用, 这里拦截一下,
+})
+
 const updateMenu = () => {
   // 异步从配置文件中读取配置
   fs.readFile(CONFIG_FILE, 'utf-8', function(err, data) {
@@ -56,12 +66,17 @@ const updateMenu = () => {
         accelerator: 'Command+E'
       },
       { type: 'separator' },
-      ...apps.slice(0,10).map(createClippingMenuItem),
+      ...apps.map(createClippingMenuItem),
       { type: 'separator' },
       {
-        label: '更新',
+        label: '重新加载配置',
         click() { updateMenu(); showNotification('', '更新完成') },
         accelerator: 'Command+U'
+      },
+      {
+        label: '偏好设置...',
+        click() { showPreferencePanel() },
+        accelerator: 'Command+,'
       },
       {
         label: '退出',
@@ -150,4 +165,31 @@ const runCommand = function(appName, cmdName, cmd) {
       showNotification(appName + ' - ' + cmdName, '执行失败, 请检查命令配置')
     }
   })
+}
+
+const showPreferencePanel = function() {
+  if (win != null) {
+    win.show()
+    return ;
+  }
+  win = new BrowserWindow({
+    width: 1200, 
+    height: 1500,
+    frame: true,
+    resizable: false,
+    maximizable: false,
+    minimizable: false,
+    center: true,
+    title: 'MenubarCMD',
+    webPreferences: {
+      devTools: true,
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      preload: path.join(__dirname, './render.js')
+    }
+  })
+
+  win.loadFile(path.join(__dirname, 'preference.html'))
+  win.on('closed', () => win = null)
 }
