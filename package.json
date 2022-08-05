@@ -29,10 +29,12 @@
     "mac": {
       "target": "dmg",
       "icon": "./assets/CMD.icns",
-      "category": "public.app-category.developer-tools"
+      "category": "public.app-category.developer-tools",
+      "type": "distribution"
     },
     "dmg": {
-      "backgroundColor": "#fff"
+      "backgroundColor": "#fff",
+      "icon": "./assets/CMD.icns"
     }
   }
 }
