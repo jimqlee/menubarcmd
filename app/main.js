@@ -1,35 +1,53 @@
-const { app, Tray, Menu, BrowserWindow, dialog, shell, Notification, crashReporter } = require('electron');
+const { app, Tray, Menu, BrowserWindow, shell, Notification, crashReporter } = require('electron');
 const shelljs = require('shelljs')
 const fs = require('fs')
 const path = require('path')
 const executor = require('child_process').exec;
+const {I18n} = require('i18n')
 
-
-// 获取用户目录
+// app data path
 const CONFIG_PATH = app.getPath('userData') 
-// 配置文件
+// config file
 const CONFIG_FILE = CONFIG_PATH + "/menucmd.json"
 
-let win = null;
+// tray
 let tray = null;
 
-// 崩溃日志
+// locales
+let locales = ['en-US', 'zh-CN'];
+// current language
+let lang = {}
+
+// crash report 
 app.setPath('crashDumps', CONFIG_PATH + '/crash.log')
 crashReporter.start({uploadToServer: false})
 
+// setup node env
 shelljs.config.execPath = String(shelljs.which('node'))
 
-// 应用单例
+// app singleton
 const allowToInitiate = app.requestSingleInstanceLock({})
 if (!allowToInitiate) {
   app.quit()
 }
 
 if (app.isPackaged) {
-  // 设置开机启动, 启动后隐藏窗口
+  // launch at startup, and hide it
   app.setLoginItemSettings({openAtLogin: true, openAsHidden: true})
 }
 
+// international
+let i18n = new I18n({
+  updateFiles: true,
+  locales: locales,
+  directory: path.join(__dirname, '../locales'),
+  register: lang
+})
+
+
+/**
+ * app ready
+ */
 app.whenReady().then(() => {
   if (app.dock) app.dock.hide();
 
@@ -39,47 +57,53 @@ app.whenReady().then(() => {
   if (process.platform === 'win32') {
     tray.on('click', tray.popUpContextMenu);
   }
-  // 左右键单击一致
+
+  // right click acts like click
   tray.on('right-click', function() {
     tray.click()
   })
 
-  // 检查配置文件
+  // check config file
   checkConfigFile()
-  // 菜单栏详情
+  // create tray menu
   updateMenu()
 })
 
 app.on('window-all-closed', () => {
-  // 当所有窗口关闭时, 默认会退出应用, 这里拦截一下,
+  // intercept here otherwise app will quit after all windows closed
 })
 
+/**
+ * update menu and submenu
+ */
 const updateMenu = () => {
-  // 异步从配置文件中读取配置
+  // async read config file
   fs.readFile(CONFIG_FILE, 'utf-8', function(err, data) {
     if (err) throw err;
-    let apps = JSON.parse(data).apps
+    
+    let config = JSON.parse(data)
+    i18n.setLocale(lang, config.locale)
+
     let menu = Menu.buildFromTemplate([
       {
-        label: '打开配置文件',
+        label: lang.__('locateConfigFile'),
         click() { shell.showItemInFolder(CONFIG_FILE) },
         accelerator: 'Command+E'
       },
       { type: 'separator' },
-      ...apps.map(createClippingMenuItem),
+        ...config.apps.map(createMenuItem),
       { type: 'separator' },
       {
-        label: '重新加载配置',
-        click() { updateMenu(); showNotification('', '更新完成') },
-        accelerator: 'Command+U'
+        label: lang.__('reloadConfigFile'),
+        click() { updateMenu(); showNotification('', lang.__('reloadFinish')) },
+        accelerator: 'Command+R'
       },
       {
-        label: '偏好设置...',
-        click() { showPreferencePanel() },
-        accelerator: 'Command+,'
+        label: lang.__('language'),
+        submenu: createLocaleMenuItem(config)
       },
       {
-        label: '退出',
+        label: lang.__('quit'),
         click() { app.quit(); },
         accelerator: 'Command+Q'
       }
@@ -89,7 +113,14 @@ const updateMenu = () => {
   })
 };
 
-const createClippingMenuItem = (app, index) => {
+/**
+ * create menu item
+ * 
+ * @param {*} app 
+ * @param {*} index 
+ * @returns 
+ */
+const createMenuItem = (app, index) => {
   let cmd = app.cmd
   var submenus = []
   
@@ -112,18 +143,44 @@ const createClippingMenuItem = (app, index) => {
   };
 };
 
+/**
+ * create i18n menu item
+ * 
+ * @returns 
+ */
+const createLocaleMenuItem = function(config) {
+  var localeMenuItem = []
+  for(const lo in locales) {
+    localeMenuItem.push({
+      label: locales[lo],
+      click: function() {
+        updateLocale(config, locales[lo])
+        updateMenu()
+      }
+    })
+  }
+  return localeMenuItem
+};
+
+/**
+ * show notification
+ * 
+ * @param {*} title 
+ * @param {*} message 
+ */
 const showNotification = function(title, message) {
   const notification = new Notification({
     title: title,
     subtitle: null,
     body: message,
     hasReply: false,
-    closeButtonText: '关闭'
+    closeButtonText: lang.__('close')
   })
   notification.show()
 }
 
 const DEMO = {
+  "locale": "zh-CN",
   "apps": [
       {
           "name": "demo",
@@ -135,20 +192,55 @@ const DEMO = {
           }
       }
 ]}
+/**
+ * check config file, will create it if not exists
+ */
 const checkConfigFile = function() {
   try {
-    // 使用同步判断配置文件是否存在
+    // sync-check if config file exists
     fs.accessSync(CONFIG_FILE, fs.F_OK)
   } catch(err) {
-    // 创建 demo 配置文件
+    // create demo config file
     shelljs.touch(CONFIG_FILE)
-    // 同步写入 demo
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify(DEMO), function(err) {
+    // write into file
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(DEMO, null, 4), function(err) {
       if (err) throw err
     })
   }
 }
 
+/**
+ * update selected locale: update config file and refresh menu
+ * 
+ * @param {*} config 
+ * @param {*} locale 
+ */
+const updateLocale = function(config, locale) {
+  i18n.setLocale(lang, locale)
+  config['locale'] = locale
+  writeConfigFile(JSON.stringify(config, null, 4))
+}
+
+/**
+ * write config file
+ * 
+ * @param {*} data 
+ */
+const writeConfigFile = function(data) {
+  fs.writeFileSync(CONFIG_FILE, data, function(err) {
+    if (err) {
+      showNotification(lang.__('updateConfigFileFail'), err)
+    }
+  })
+}
+
+/**
+ * run the selected command
+ * 
+ * @param {*} appName 
+ * @param {*} cmdName 
+ * @param {*} cmd 
+ */
 const runCommand = function(appName, cmdName, cmd) {
   exec_process = executor(cmd, {})
   
@@ -156,40 +248,14 @@ const runCommand = function(appName, cmdName, cmd) {
     showNotification(appName + ' - ' + cmdName, data)
   })
   exec_process.stderr.on('data', function(data) {
-    showNotification(appName + ' - ' + cmdName, '执行失败: ' + data)
+    showNotification(appName + ' - ' + cmdName, lang.__('executeFail') + ': ' + data)
   })
   exec_process.on('close', function(code) {
-    if (code == 0) {
-      showNotification(appName + ' - ' + cmdName, '执行成功')
+    if (code !== 0) {
+      showNotification(appName + ' - ' + cmdName, lang.__('executeFailAndCheck'))
     } else {
-      showNotification(appName + ' - ' + cmdName, '执行失败, 请检查命令配置')
+      showNotification(appName + ' - ' + cmdName, lang.__('executeSucc'))
     }
   })
 }
 
-const showPreferencePanel = function() {
-  if (win != null) {
-    win.show()
-    return ;
-  }
-  win = new BrowserWindow({
-    width: 1200, 
-    height: 1500,
-    frame: true,
-    resizable: false,
-    maximizable: false,
-    minimizable: false,
-    center: true,
-    title: 'MenubarCMD',
-    webPreferences: {
-      devTools: true,
-      nodeIntegration: true,
-      contextIsolation: false,
-      enableRemoteModule: true,
-      preload: path.join(__dirname, './render.js')
-    }
-  })
-
-  win.loadFile(path.join(__dirname, 'preference.html'))
-  win.on('closed', () => win = null)
-}

@@ -1,23 +1,25 @@
 {
   "name": "MenubarCMD",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Run command from menubar",
   "main": "app/main.js",
   "scripts": {
     "start": "electron .",
     "app:dir": "electron-builder --dir",
     "app:dist": "electron-builder",
-    "build": "../electron-builder/node_modules/.bin/electron-builder"
+    "build": "node_modules/.bin/electron-builder"
   },
   "repository": "",
   "author": "jimqlee",
   "license": "MPLv2",
   "dependencies": {
+    "electron-i18n": "^1.3136.0",
+    "i18n": "^0.15.0",
     "shelljs": "^0.8.5"
   },
   "devDependencies": {
     "electron": "^19.0.8",
-    "electron-builder": "^23.1.0",
+    "electron-builder": "^23.3.3",
     "eslint": "4.17.0"
   },
   "build": {

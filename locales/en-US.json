@@ -1,0 +1,13 @@
+{
+  "locateConfigFile": "Locate config file",
+  "reloadConfigFile": "Reload",
+  "reloadFinish": "Config reloaded",
+  "preference": "Preference...",
+  "quit": "Quit",
+  "close": "Close", 
+  "executeSucc": "Command succeed",
+  "executeFail": "Command failed",
+  "executeFailAndCheck": "Command failed, please check your config",
+  "language": "Language...",
+  "updateConfigFileFail": "error updating config file "
+}

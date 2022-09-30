@@ -1,0 +1,13 @@
+{
+  "locateConfigFile": "打开配置文件",
+  "reloadConfigFile": "重新加载配置文件",
+  "reloadFinish": "加载成功",
+  "preference": "偏好设置...",
+  "quit": "退出",
+  "close": "关闭", 
+  "executeSucc": "执行成功",
+  "executeFail": "执行失败",
+  "executeFailAndCheck": "执行失败, 请检查你的配置",
+  "language": "显示语言...",
+  "updateConfigFileFail": "更新配置文件出错了"
+}
