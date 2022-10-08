@@ -9,5 +9,6 @@
   "executeFail": "Command failed",
   "executeFailAndCheck": "Command failed, please check your config",
   "language": "Language...",
-  "updateConfigFileFail": "error updating config file "
+  "updateConfigFileFail": "error updating config file",
+  "copied": "Command copied to the system clipboard"
 }

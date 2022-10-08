@@ -9,5 +9,6 @@
   "executeFail": "执行失败",
   "executeFailAndCheck": "执行失败, 请检查你的配置",
   "language": "显示语言...",
-  "updateConfigFileFail": "更新配置文件出错了"
+  "updateConfigFileFail": "更新配置文件出错了",
+  "copied": "命令已复制到系统剪贴板"
 }

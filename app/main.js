@@ -1,9 +1,10 @@
-const { app, Tray, Menu, BrowserWindow, shell, Notification, crashReporter } = require('electron');
+const { app, Tray, Menu, shell, Notification, crashReporter, clipboard } = require('electron');
 const shelljs = require('shelljs')
 const fs = require('fs')
 const path = require('path')
 const executor = require('child_process').exec;
 const {I18n} = require('i18n')
+const customI18n = require('./i18n')
 
 // app data path
 const CONFIG_PATH = app.getPath('userData') 
@@ -14,7 +15,7 @@ const CONFIG_FILE = CONFIG_PATH + "/menucmd.json"
 let tray = null;
 
 // locales
-let locales = ['en-US', 'zh-CN'];
+let locales = customI18n.getSupportedLocales();
 // current language
 let lang = {}
 
@@ -36,7 +37,7 @@ if (app.isPackaged) {
   app.setLoginItemSettings({openAtLogin: true, openAsHidden: true})
 }
 
-// international
+// internationalize
 let i18n = new I18n({
   updateFiles: true,
   locales: locales,
@@ -129,8 +130,21 @@ const createMenuItem = (app, index) => {
       const element = cmd[c];
       const submenu = {
         label: c,
-        click: function() {
-          runCommand(app.name, c, element)
+        click: function(ref, bounds, event) {
+          // event: ctrlKey, metaKey(macOS command), shiftKey, altKey(windows alt, macOS option), triggeredByAccelerator
+          
+          // if triggered with shift, copy command to system clipboard and then run it
+          if (event.shiftKey) {
+            copyAndRunCommand(app.name, c, element)
+          } 
+          // if triggered with alt/option, copy command to system clipboard
+          else if (event.altKey) {
+            copyCommand(app.name, c, element)
+          } 
+          // run command immediately
+          else {
+            runCommand(app.name, c, element)
+          }
         }
       }
       submenus.push(submenu)
@@ -152,15 +166,32 @@ const createLocaleMenuItem = function(config) {
   var localeMenuItem = []
   for(const lo in locales) {
     localeMenuItem.push({
-      label: locales[lo],
+      label: customI18n.getLocaleLang(locales[lo]),
       click: function() {
         updateLocale(config, locales[lo])
         updateMenu()
-      }
+      },
+      type: "radio",
+      checked: isLocaleChecked(config, locales[lo])
     })
   }
+
   return localeMenuItem
 };
+
+/**
+ * 
+ * 
+ * @param {*} config 
+ * @param {*} current 
+ * @returns 
+ */
+const isLocaleChecked = function(config, current) {
+  if (config.locale == current) {
+    return true;
+  }
+  return false;
+}
 
 /**
  * show notification
@@ -192,6 +223,7 @@ const DEMO = {
           }
       }
 ]}
+
 /**
  * check config file, will create it if not exists
  */
@@ -259,3 +291,12 @@ const runCommand = function(appName, cmdName, cmd) {
   })
 }
 
+const copyCommand = function(appName, cmdName, cmd) {
+  clipboard.writeText(cmd)
+  showNotification(appName + ' - ' + cmdName, lang.__('copied'))
+}
+
+const copyAndRunCommand = function(appName, cmdName, cmd) {
+  copyCommand(appName, cmdName, cmd)
+  runCommand(appName, cmdName, cmd)
+}
