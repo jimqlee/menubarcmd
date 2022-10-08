@@ -5,7 +5,6 @@
 
 [English doc](./README-en.md)
 
-
 ## 示例
 
 <img src="doc/cn.jpg" alt="snap_1" style="zoom: 67%;" />
@@ -16,19 +15,23 @@
 
 1. 打开配置文件(Cmd+E), 并使用 JSON 编辑器进行编辑
 
-```json
-{
-    "locale": "显示语言, 目前支持 zh-CN, en-US",
-    "apps": [{
-        "name": "应用名称, 例如 MySQL, Kafka",
-        "cmd": {
-            "命令名称或者其他显而易见的符号, 例如 start, stop": "要执行的命令, 注意如果是依赖于特定 shell 的, 需要指定"
-        }
-    }]
-}
-```
+   ```json
+   {
+       "locale": "显示语言, 目前支持 zh-CN, en-US",
+       "apps": [{
+           "name": "应用名称, 例如 MySQL, Kafka",
+           "cmd": {
+               "命令名称或者其他显而易见的符号, 例如 start, stop": "要执行的命令, 注意如果是依赖于特定 shell 的, 需要指定"
+           }
+       }]
+   }
+   ```
 
 2. 重新加载配置文件(Cmd+R)
+3. 运行
+   - 点击命令, 直接运行
+   - 按住 `Option` 点击命令, 复制命令内容到剪贴板
+   - 按住 `Shift` 点击命令, 运行命令并把命令内容复制到剪贴板
 
 
 

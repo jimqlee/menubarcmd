@@ -15,19 +15,23 @@
 
 1. Open the Finder(Cmd+E), and open the `menucmd.json` file with json-editor
 
-```json
-{
-    "locale": "Display language, currently support zh-CN, en-US",
-    "apps": [{
-        "name": "Your application name, like MySQL, Kafka",
-        "cmd": {
-            "Name to describe the command, like start, stop": "Command to execute, mind if your command should run with special shell"
-        }
-    }]
-}
-```
+   ```json
+   {
+       "locale": "Display language, currently support zh-CN, en-US",
+       "apps": [{
+           "name": "Your application name, like MySQL, Kafka",
+           "cmd": {
+               "Name to describe the command, like start, stop": "Command to execute, mind if your command should run with special shell"
+           }
+       }]
+   }
+   ```
 
 2. Save the config file and reload(Cmd+R)
+3. Run 
+   - Single click to run the command
+   - Single click while pressing `Option` to copy the command to the system clipboard
+   - Single click while pressing `Shift` to run the command & copy the command to the system clipboard
 
 
 
