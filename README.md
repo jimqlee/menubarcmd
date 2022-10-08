@@ -1,12 +1,14 @@
-# menubarcmd
+# MenubarCMD
 
 > 在菜单栏快捷执行预定义的脚本
 
 
+[English doc](./README-en.md)
+
 
 ## 示例
 
-<img src="doc/snap_1.jpg" alt="snap_1" style="zoom: 67%;" />
+<img src="doc/cn.jpg" alt="snap_1" style="zoom: 67%;" />
 
 
 
