@@ -1,4 +1,4 @@
-const { app, Tray, Menu, shell, Notification, crashReporter, clipboard } = require('electron');
+const { app, Tray, Menu, shell, Notification, crashReporter, clipboard, globalShortcut } = require('electron');
 const shelljs = require('shelljs')
 const fs = require('fs')
 const path = require('path')
@@ -61,17 +61,25 @@ app.whenReady().then(() => {
 
   // right click acts like click
   tray.on('right-click', function() {
-    tray.click()
+    tray.click()  
   })
 
   // check config file
   checkConfigFile()
   // create tray menu
   updateMenu()
+
+  globalShortcut.register('Command+Shift+M', function () {
+    tray.popUpContextMenu()
+  })
 })
 
 app.on('window-all-closed', () => {
   // intercept here otherwise app will quit after all windows closed
+})
+
+app.on('will-quit', function() {
+  globalShortcut.unregisterAll()
 })
 
 /**
