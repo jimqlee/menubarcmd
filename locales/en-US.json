@@ -1,5 +1,5 @@
 {
-  "locateConfigFile": "Locate config file",
+  "locateConfigFile": "Open config in Finder",
   "reloadConfigFile": "Reload",
   "reloadFinish": "Config reloaded",
   "preference": "Preference...",
